@@ -1,0 +1,27 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100 # Hz
+    
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    forward_position_controller:
+      type: forward_command_controller/ForwardCommandController
+
+    position_controller:
+      type: position_controllers/JointGroupPositionController
+
+forward_position_controller:
+  ros__parameters:
+    joints:
+      - main_body_neck_joint
+    interface_name: position
+    hold_on_stop: true
+
+position_controller:
+  ros__parameters:
+    joints:
+      - main_body_neck_joint
+      - main_body_neck_2_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+

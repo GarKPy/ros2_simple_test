@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://ros.org/xacro" name="my_robot">
+  <!-- Properties -->
+  <xacro:property name="blue" value="0 0 1 0.7" />
+  <xacro:property name="yellow" value="1 1 0 0.7" />
+  <xacro:property name="head_material" value="0 0.800007 0.767275 0.7" />
+  <xacro:property name="yellow_001" value="1 1 0 0.7" />
+  <!-- Materials -->
+  <material name="blue">
+    <color rgba="${blue}" />
+  </material>
+  <material name="yellow">
+    <color rgba="${yellow}" />
+  </material>
+  <material name="head_material">
+    <color rgba="${head_material}" />
+  </material>
+  <material name="yellow_001">
+    <color rgba="${yellow_001}" />
+  </material>
+  <!-- Links -->
+  <link name="base_link">
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+    </inertial>
+  </link>
+  <link name="head_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="1.570796 0 1.570796" />
+      <mass value="0.1" />
+      <inertia ixx="0.000771" ixy="0" ixz="0" iyy="0.002104" iyz="0" izz="0.002833" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796 0 1.570796" />
+      <geometry>
+        <box size="0.5 0.3 0.05" />
+      </geometry>
+      <material name="head_material" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.570796 0 1.570796" />
+      <geometry>
+        <box size="0.5 0.3 0.05" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="main_body_link">
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.104167" ixy="0" ixz="0" iyy="0.354167" iyz="0" izz="0.416667" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="2 1 0.5" />
+      </geometry>
+      <material name="blue" />
+    </visual>
+    <collision>
+      <geometry>
+        <box size="2 1 0.5" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="neck_2_link">
+    <inertial>
+      <origin xyz="0 0 0.25" rpy="0 0 0" />
+      <mass value="0.5" />
+      <inertia ixx="0.083333" ixy="0" ixz="0" iyy="0.083333" iyz="0" izz="0.083333" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0.25" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find blender_test_core)/meshes/neck_2_link_visual.stl" />
+      </geometry>
+      <material name="yellow_001" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.25" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find blender_test_core)/meshes/neck_2_link_collision.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="neck_link">
+    <inertial>
+      <origin xyz="0 0 0.25" rpy="0 0 0" />
+      <mass value="0.5" />
+      <inertia ixx="0.083333" ixy="0" ixz="0" iyy="0.083333" iyz="0" izz="0.083333" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0.25" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find blender_test_core)/meshes/neck_link_visual.stl" />
+      </geometry>
+      <material name="yellow" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.25" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="file://$(find blender_test_core)/meshes/neck_link_collision.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <!-- Joints -->
+  <joint name="base_link_joint" type="fixed">
+    <origin xyz="0 0 0.25" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="main_body_link" />
+  </joint>
+  <joint name="main_body_neck_2_joint" type="revolute">
+    <origin xyz="-0.5 0 0.25" rpy="0 0 0" />
+    <parent link="main_body_link" />
+    <child link="neck_2_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" velocity="1" lower="-3.141593" upper="3.141593" />
+  </joint>
+  <joint name="main_body_neck_joint" type="revolute">
+    <origin xyz="0.5 0 0.25" rpy="0 0 0" />
+    <parent link="main_body_link" />
+    <child link="neck_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="10" velocity="1" lower="-3.141593" upper="3.141593" />
+  </joint>
+  <joint name="neck_head_joint" type="fixed">
+    <origin xyz="0.25 0 0.5" rpy="0 0 0" />
+    <parent link="neck_link" />
+    <child link="head_link" />
+  </joint>
+  <!-- ROS 2 Control -->
+  <ros2_control name="GazeboSimSystem" type="system">
+    <hardware>
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+    </hardware>
+    <joint name="main_body_neck_2_joint">
+      <command_interface name="position" />
+      <state_interface name="position" />
+    </joint>
+    <joint name="main_body_neck_joint">
+      <command_interface name="position" />
+      <state_interface name="position" />
+    </joint>
+  </ros2_control>
+  <!-- Gazebo Extensions -->
+  <gazebo>
+    <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin" filename="gz_ros2_control-system">
+      <parameters>$(find blender_test_core)/config/my_robot_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+</robot>
